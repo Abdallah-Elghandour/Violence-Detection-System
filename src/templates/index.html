@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        Violence Detection
+    </title>
+</head>
+<style type="text/css">
+    img {
+        width: 890px;
+        height: 640px;
+        margin: 15px;
+        border-radius: 20px;
+    }
+
+    input {
+        width: 60px;
+        height: 60px;
+        margin: 50px;
+        border-radius: 100px;
+        font-size: 15px;
+    }
+
+    h2 {
+        font-size: 50px;
+    }
+
+    .video_border {
+        background: rgb(0, 41, 65);
+        width: 920px;
+        height: 670px;
+        margin-top: 100px;
+        border-radius: 30px;
+    }
+</style>
+
+<body>
+    <center>
+        <div class="main">
+            <h2 class="title">Violence Detecion System</h2>
+
+            <div class="video_border">
+
+                <img src="{{url_for('video_feed')}}">
+            </div>
+
+
+            <form method="post" action="{{url_for('tasks')}}">
+                {%if not switch%}<input type="submit" value="Start" name="start"
+                    style="background-color:green; color: white" />
+                {%else%}<input type="submit" value="Stop" name="stop" style="background-color:red; color: white " />{%
+                endif %}
+            </form>
+
+
+        </div>
+    </center>
+</body>
+
+</html>
