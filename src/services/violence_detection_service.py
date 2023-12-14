@@ -4,8 +4,8 @@ from ultralytics import YOLO
 import numpy as np
 
 
-lstm_model = keras.models.load_model('models\\best\\model.keras')
-yolo_model = YOLO('models\\best\\yolov8n-pose.pt')
+lstm_model = keras.models.load_model('model\\best\\model.keras')
+yolo_model = YOLO('model\\best\\yolov8n-pose.pt')
 
 steps = 0
 lst_of_dct = {'key_1':[],'key_2':[]}
@@ -117,5 +117,5 @@ class ViolenceDetectionService:
                     # else:
                     #     label_="proccessing"
         image = cv2.putText(image, label_, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-        # image = cv2.flip(image,1)
+        
         return image
