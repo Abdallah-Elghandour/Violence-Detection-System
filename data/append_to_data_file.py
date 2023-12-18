@@ -21,20 +21,3 @@ file2.close()
 file3.close()
 file4.close()
 
-
-
-# file1 = open("dataset\\64 frames data\\Y.txt", "r")
-# file2 = open("dataset\\64 frames data\\Y_violence.txt", "w")
-
-# lines = file1.readlines()
-# for line in lines:
-#     if line == "0\n":
-#         file2.write("1\n")
-#     else:
-#         file2.write("1\n")
-
-
-# file1.close()
-# file2.close()
-
-
