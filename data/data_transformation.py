@@ -4,13 +4,16 @@ import cv2
 import os
 
 
-path = "D:\\Final Project\\Violence Detection\\dataset2\\videos\\standing\\"
-filenames = os.listdir(path)
+# **************add your videos path****************
+# path = "Violence Detection\\dataset2\\videos\\standing\\"
+#************************************************************
 
+filenames = os.listdir(path)
 yolo_model = YOLO('model\\best\\yolov8n-pose.pt')
 
-fileX = open("dataset2\\64 frames data\\X_Standing.txt", 'a')
-fileY = open("dataset2\\64 frames data\\Y_Standing.txt", "a") 
+# files to write class keypoint data and class labels
+fileX = open("data\\dataset\\X_Standing.txt", 'a')
+fileY = open("data\\dataset\\Y_Standing.txt", 'a') 
 
 
 for filename in filenames:
@@ -53,7 +56,7 @@ for filename in filenames:
                     fileX.write(line)
                     line = ""
 
-                fileY.write("2\n")
+                fileY.write("2\n") # write class number as label
                 break
         else: 
             break
