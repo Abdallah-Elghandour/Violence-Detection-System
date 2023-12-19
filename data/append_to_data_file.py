@@ -1,13 +1,14 @@
 
-file1 = open("dataset2\\64 frames data\\X_data.txt", "a")
-file2 = open("dataset2\\64 frames data\\Y_data.txt", "a")
-file3 = open("dataset2\\64 frames data\\X_Holding.txt", "r")
-file4 = open("dataset2\\64 frames data\\Y_Holding.txt", "r")
+file1 = open("data\\dataset\\X_data.txt", "a")
+file2 = open("data\\dataset\\Y_data.txt", "a")
+file3 = open("data\\dataset\\X_Holding.txt", "r")
+file4 = open("data\\dataset\\Y_Holding.txt", "r")
 
 lines = file3.readlines()
 lines2 = file4.readlines()
 i = 0
 j = 0
+
 for line in lines:
     i += 1 
     file1.write(line)
