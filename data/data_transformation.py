@@ -4,8 +4,8 @@ import cv2
 import os
 
 
-# **************add your videos path****************
-# path = "Violence Detection\\dataset2\\videos\\standing\\"
+# **************add your videos path to transoform your data****************
+# path = "Violence Detection\\dataset\\videos\\standing\\"
 #************************************************************
 current_directory = os.getcwd()
 project_path= os.path.abspath(os.path.join(current_directory, "../.."))
