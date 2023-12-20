@@ -7,9 +7,11 @@ import os
 # **************add your videos path****************
 # path = "Violence Detection\\dataset2\\videos\\standing\\"
 #************************************************************
+current_directory = os.getcwd()
+project_path= os.path.abspath(os.path.join(current_directory, "../.."))
 
 filenames = os.listdir(path)
-yolo_model = YOLO('model\\best\\yolov8n-pose.pt')
+yolo_model = YOLO(f'{project_path}/model/best/yolov8n-pose.pt')
 
 # files to write class keypoint data and class labels
 fileX = open("data\\dataset\\X_Standing.txt", 'a')
