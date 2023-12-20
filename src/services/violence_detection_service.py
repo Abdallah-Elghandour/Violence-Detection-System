@@ -9,8 +9,6 @@ yolo_model = YOLO('model\\best\\yolov8n-pose.pt')
 
 steps = 0
 lst_of_dct = {'key_1':[],'key_2':[]}
-label = " "
-lst = []
 predictions_lst = []
 label_ = ''
 
@@ -21,10 +19,8 @@ class ViolenceDetectionService:
     def __init__(self):
         pass
     def detect(self,image):
-        global steps, lst_of_dct, label, lst, predictions_lst, label_
-        minn = 1500
-        points = {}
-        i = 0
+        global label_
+        
         label_ = ''
 
         results = yolo_model.predict(source=image, conf=0.60, classes=0, save=False)
@@ -37,85 +33,100 @@ class ViolenceDetectionService:
         if len(result_keypoint[0].xy[0]) != 0:
 
             if len(result_keypoint) > 1:
-                key1 = 0
-                key2 = 0
+                keys = self.find_closest_points(boxes)
+                self.proccess_keypoints(result_keypoint, keys)
+                
+        image = cv2.putText(image, label_, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+        return image
+    
+    def find_closest_points(self, boxes):
+        key1 = 0
+        key2 = 0
+        minn = 1500
+        points = {}
 
-                for box in boxes:
+        for i, box in enumerate(boxes):
 
-                    coordinates = box.xyxy[0]
+            coordinates = box.xyxy[0]
 
-                    x_c = (coordinates[0] + coordinates[2]) // 2
-                    y_c = (coordinates[1] + coordinates[3]) // 2
-                    p = (x_c, y_c)
-
-                    points[i] = [coordinates, p]
-
-                    for k in points.keys():
-                        if i != k:
-                            dis = ((points[i][1][0] - points[k][1][0]) ** 2 +
-                                (points[i][1][1] - points[k][1][1]) ** 2) ** 0.5
-
-                            if dis < minn:
-                                minn = dis
-                                key1 = i
-                                key2 = k
-                            
-                    i += 1
-                if key1 == 0 and key2 == 0:
-                    keys = []
-                else:
-                    keys = [key1, key2]
             
-                for z in range(len(keys)):
+            centroid_point = self.centroid(coordinates[0], coordinates[1], coordinates[2], coordinates[3])
 
-                    num = result_keypoint[keys[z]].xy[0].cpu().numpy()
+            points[i] = [coordinates, centroid_point]
+
+            for j in points.keys():
+                if i != j:
+                    distance = self.calculate_distance(points[i], points[j])
+
+                    if distance < minn:
+                        minn = distance
+                        key1 = i
+                        key2 = j
+                    
+        if key1 == 0 and key2 == 0:
+            keys = []
+        else:
+            keys = [key1, key2]
+
+        return keys
+    
+    def calculate_distance(self, point1, point2):
+        return ((point1[1][0] - point2[1][0]) ** 2 +
+                        (point1[1][1] - point2[1][1]) ** 2) ** 0.5
+    
+    def centroid(self, x1, y1, x2, y2):
+        return ((x1 + x2) // 2, (y1 + y2) // 2)
+    
+    def proccess_keypoints(self, keypoints, keys):
+        global steps, lst_of_dct
+        for i in range(len(keys)):
+
+                    num = keypoints[keys[i]].xy[0].cpu().numpy()
                     num = num.reshape((1, 34))
                 
-                    if z == 0:
+                    if i == 0:
                         lst_of_dct['key_1'].append(num)
                         steps += 1
-                    if z == 1:
+                    if i == 1:
                         lst_of_dct['key_2'].append(num)
 
                     if steps == 64:
 
-                        if z == 0:
-                            lst=lst_of_dct['key_1']
-                        if z == 1:
-                            lst=lst_of_dct['key_2']
+                        if i == 0:
+                            lst_of_keypoints = lst_of_dct['key_1']
+                        if i == 1:
+                            lst_of_keypoints = lst_of_dct['key_2']
                             steps = 0
                             lst_of_dct = {'key_1':[],'key_2':[]}
 
-                        lst = np.array(lst)
-                        lst = lst.reshape((1, 64, 34))
+                        lst_of_keypoints = np.array(lst_of_keypoints)
+                        lst_of_keypoints = lst_of_keypoints.reshape((1, 64, 34))
+                        self.process_prediction(lst_of_keypoints)
                         
-                        preds = lstm_model.predict(lst)
+                        
+    def process_prediction(self, lst_of_keypoints):
+        global predictions_lst, label_
+
+        preds = lstm_model.predict(lst_of_keypoints)
                     
+        threshold = 0.8
+        predicted_probabilities = preds[0]
 
-                        threshold = 0.8
-                        predicted_probabilities = preds[0]
+        max_prob = np.max(predicted_probabilities)
 
-                        max_prob = np.max(predicted_probabilities)
-
-                        if max_prob > threshold:
-                            
-                            label = LABELS[np.argmax(preds)]
-                            predictions_lst.append(label)
-                        else:
-                            label = "NORMAL"
-                            predictions_lst.append(label)
-                        
-                        lst = []
-                    if len(predictions_lst) == 6:
-                        
-                        if (predictions_lst.count('2-hands punch') + predictions_lst.count('1-hand punch')) >= 4:
-                            label_ = "Violence"
-                        else:
-                            label_ = "No Violence"
-                        predictions_lst=[]
-                    
-                    # else:
-                    #     label_="proccessing"
-        image = cv2.putText(image, label_, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+        if max_prob > threshold:
+            
+            label = LABELS[np.argmax(preds)]
+            predictions_lst.append(label)
+        else:
+            label = "NORMAL"
+            predictions_lst.append(label)
         
-        return image
+        lst = []
+        if len(predictions_lst) == 6:
+            
+            if (predictions_lst.count('2-hands punch') + predictions_lst.count('1-hand punch')) >= 4:
+                label_ = "Violence"
+            else:
+                label_ = "No Violence"
+            predictions_lst=[]
