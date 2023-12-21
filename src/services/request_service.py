@@ -9,17 +9,20 @@ class RequestService:
     def __init__(self):
         pass
     def tasks(self):
-    
-        if request.method == 'POST':
-            if request.form.get('start') == 'Start':
-                RequestService.switch = True
-                RequestService.cap = cv2.VideoCapture(0)#http://192.168.1.72:8080/video
+        try:
 
-            elif request.form.get('stop') == 'Stop':
-                
-                if RequestService.switch:
-                    RequestService.cap.release()
-                    cv2.destroyAllWindows()
-                    RequestService.switch = False
+            if request.method == 'POST':
+                if request.form.get('start') == 'Start':
+                    RequestService.switch = True
+                    RequestService.cap = cv2.VideoCapture(0)#http://192.168.1.72:8080/video
 
+                elif request.form.get('stop') == 'Stop':
+                    
+                    if RequestService.switch:
+                        RequestService.cap.release()
+                        cv2.destroyAllWindows()
+                        RequestService.switch = False
+        except Exception as e:
+            print(f"Error during tasks: {e}")
+            
         return Response(render_template('index.html', switch=RequestService.switch)) 
