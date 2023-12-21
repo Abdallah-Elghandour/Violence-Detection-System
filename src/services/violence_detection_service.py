@@ -70,11 +70,11 @@ class ViolenceDetectionService:
 
         return keys
     
-    def calculate_distance(self, point1, point2):
+    def calculate_distance(point1, point2):
         return ((point1[1][0] - point2[1][0]) ** 2 +
                         (point1[1][1] - point2[1][1]) ** 2) ** 0.5
     
-    def centroid(self, x1, y1, x2, y2):
+    def centroid(x1, y1, x2, y2):
         return ((x1 + x2) // 2, (y1 + y2) // 2)
     
     def proccess_keypoints(self, keypoints, keys):
@@ -104,7 +104,7 @@ class ViolenceDetectionService:
                         self.process_prediction(lst_of_keypoints)
                         
                         
-    def process_prediction(self, lst_of_keypoints):
+    def process_prediction(lst_of_keypoints):
         global predictions_lst, label_
 
         preds = lstm_model.predict(lst_of_keypoints)
@@ -122,7 +122,7 @@ class ViolenceDetectionService:
             label = "NORMAL"
             predictions_lst.append(label)
         
-        lst = []
+        
         if len(predictions_lst) == 6:
             
             if (predictions_lst.count('2-hands punch') + predictions_lst.count('1-hand punch')) >= 4:
