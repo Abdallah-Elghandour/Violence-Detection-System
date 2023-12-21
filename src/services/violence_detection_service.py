@@ -20,7 +20,6 @@ class ViolenceDetectionService:
         pass
     def detect(self,image):
         global label_
-        
         label_ = ''
 
         results = yolo_model.predict(source=image, conf=0.60, classes=0, save=False)
@@ -40,33 +39,36 @@ class ViolenceDetectionService:
         return image
     
     def find_closest_points(self, boxes):
-        key1 = 0
-        key2 = 0
-        minn = 1500
-        points = {}
+        try:
+            key1 = 0
+            key2 = 0
+            minn = 1500
+            points = {}
 
-        for i, box in enumerate(boxes):
+            for i, box in enumerate(boxes):
 
-            coordinates = box.xyxy[0]
+                coordinates = box.xyxy[0]
 
-            
-            centroid_point = self.centroid(coordinates[0], coordinates[1], coordinates[2], coordinates[3])
+                
+                centroid_point = self.centroid(coordinates[0], coordinates[1], coordinates[2], coordinates[3])
 
-            points[i] = [coordinates, centroid_point]
+                points[i] = [coordinates, centroid_point]
 
-            for j in points.keys():
-                if i != j:
-                    distance = self.calculate_distance(points[i], points[j])
+                for j in points.keys():
+                    if i != j:
+                        distance = self.calculate_distance(points[i], points[j])
 
-                    if distance < minn:
-                        minn = distance
-                        key1 = i
-                        key2 = j
-                    
-        if key1 == 0 and key2 == 0:
-            keys = []
-        else:
-            keys = [key1, key2]
+                        if distance < minn:
+                            minn = distance
+                            key1 = i
+                            key2 = j
+                        
+            if key1 == 0 and key2 == 0:
+                keys = []
+            else:
+                keys = [key1, key2]
+        except Exception as e:
+            print(f"Error during find_closest_points: {e}")
 
         return keys
     
@@ -79,54 +81,61 @@ class ViolenceDetectionService:
     
     def proccess_keypoints(self, keypoints, keys):
         global steps, lst_of_dct
-        for i in range(len(keys)):
+        try:
 
-                    num = keypoints[keys[i]].xy[0].cpu().numpy()
-                    num = num.reshape((1, 34))
-                
-                    if i == 0:
-                        lst_of_dct['key_1'].append(num)
-                        steps += 1
-                    if i == 1:
-                        lst_of_dct['key_2'].append(num)
+            for i in range(len(keys)):
 
-                    if steps == 64:
-
+                        num = keypoints[keys[i]].xy[0].cpu().numpy()
+                        num = num.reshape((1, 34))
+                    
                         if i == 0:
-                            lst_of_keypoints = lst_of_dct['key_1']
+                            lst_of_dct['key_1'].append(num)
+                            steps += 1
                         if i == 1:
-                            lst_of_keypoints = lst_of_dct['key_2']
-                            steps = 0
-                            lst_of_dct = {'key_1':[],'key_2':[]}
+                            lst_of_dct['key_2'].append(num)
 
-                        lst_of_keypoints = np.array(lst_of_keypoints)
-                        lst_of_keypoints = lst_of_keypoints.reshape((1, 64, 34))
-                        self.process_prediction(lst_of_keypoints)
-                        
+                        if steps == 64:
+
+                            if i == 0:
+                                lst_of_keypoints = lst_of_dct['key_1']
+                            if i == 1:
+                                lst_of_keypoints = lst_of_dct['key_2']
+                                steps = 0
+                                lst_of_dct = {'key_1':[],'key_2':[]}
+
+                            lst_of_keypoints = np.array(lst_of_keypoints)
+                            lst_of_keypoints = lst_of_keypoints.reshape((1, 64, 34))
+                            self.process_prediction(lst_of_keypoints)
+        except Exception as e:
+            print(f"Error during proccess_keypoints: {e}")               
                         
     def process_prediction(lst_of_keypoints):
         global predictions_lst, label_
+        try:
 
-        preds = lstm_model.predict(lst_of_keypoints)
-                    
-        threshold = 0.8
-        predicted_probabilities = preds[0]
+            preds = lstm_model.predict(lst_of_keypoints)
+                        
+            threshold = 0.8
+            predicted_probabilities = preds[0]
 
-        max_prob = np.max(predicted_probabilities)
+            max_prob = np.max(predicted_probabilities)
 
-        if max_prob > threshold:
-            
-            label = LABELS[np.argmax(preds)]
-            predictions_lst.append(label)
-        else:
-            label = "NORMAL"
-            predictions_lst.append(label)
-        
-        
-        if len(predictions_lst) == 6:
-            
-            if (predictions_lst.count('2-hands punch') + predictions_lst.count('1-hand punch')) >= 4:
-                label_ = "Violence"
+            if max_prob > threshold:
+                
+                label = LABELS[np.argmax(preds)]
+                predictions_lst.append(label)
             else:
-                label_ = "No Violence"
-            predictions_lst=[]
+                label = "NORMAL"
+                predictions_lst.append(label)
+            
+            
+            if len(predictions_lst) == 6:
+                
+                if (predictions_lst.count('2-hands punch') + predictions_lst.count('1-hand punch')) >= 4:
+                    label_ = "Violence"
+                else:
+                    label_ = "No Violence"
+                predictions_lst=[]
+            
+        except Exception as e:  
+            print(f"Error during process_prediction: {e}")

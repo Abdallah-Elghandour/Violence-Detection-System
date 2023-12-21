@@ -9,6 +9,7 @@ from src.routes import violence_detection_route, requests_route, video_feed_rout
 app = Flask(__name__, template_folder='src/templates')
 ma = Marshmallow(app)
 api = Api(app)
+
 violence_detection_route(api)
 requests_route(api)
 video_feed_route(api)
