@@ -5,6 +5,8 @@ import numpy as np
 from config import Config
 import resend
 from threading import Thread
+from database.log_schema import logs_collection
+from datetime import datetime
 
 resend_api_key = Config.RESEND
 resend.api_key = resend_api_key
@@ -85,31 +87,30 @@ class ViolenceDetectionService:
     
     def proccess_keypoints(self, keypoints, keys):
         global steps, lst_of_dct
-        try:
-
+        try: 
             for i in range(len(keys)):
 
-                        num = keypoints[keys[i]].xy[0].cpu().numpy()
-                        num = num.reshape((1, 34))
-                    
-                        if i == 0:
-                            lst_of_dct['key_1'].append(num)
-                            steps += 1
-                        if i == 1:
-                            lst_of_dct['key_2'].append(num)
+                num = keypoints[keys[i]].xy[0].cpu().numpy()
+                num = num.reshape((1, 34))
+            
+                if i == 0:
+                    lst_of_dct['key_1'].append(num)
+                    steps += 1
+                if i == 1:
+                    lst_of_dct['key_2'].append(num)
 
-                        if steps == 64:
+                if steps == 64:
 
-                            if i == 0:
-                                lst_of_keypoints = lst_of_dct['key_1']
-                            if i == 1:
-                                lst_of_keypoints = lst_of_dct['key_2']
-                                steps = 0
-                                lst_of_dct = {'key_1':[],'key_2':[]}
+                    if i == 0:
+                        lst_of_keypoints = lst_of_dct['key_1']
+                    if i == 1:
+                        lst_of_keypoints = lst_of_dct['key_2']
+                        steps = 0
+                        lst_of_dct = {'key_1':[],'key_2':[]}
 
-                            lst_of_keypoints = np.array(lst_of_keypoints)
-                            lst_of_keypoints = lst_of_keypoints.reshape((1, 64, 34))
-                            self.process_prediction(lst_of_keypoints)
+                    lst_of_keypoints = np.array(lst_of_keypoints)
+                    lst_of_keypoints = lst_of_keypoints.reshape((1, 64, 34))
+                    self.process_prediction(lst_of_keypoints)
         except Exception as e:
             print(f"Error during proccess_keypoints: {e}")               
                         
@@ -137,14 +138,17 @@ class ViolenceDetectionService:
                 
                 if (predictions_lst.count('2-hands punch') + predictions_lst.count('1-hand punch')) >= 4:
                     label_ = "Violence"
-                    self.send_notification()
+                    notification_thread = Thread(target=self.send_notification())
+                    log_thread = Thread(target=self.add_log())
+                    notification_thread.start()
+                    log_thread.start()
                 else:
                     label_ = "No Violence"
                 predictions_lst=[]
             
         except Exception as e:  
             print(f"Error during process_prediction: {e}")
-    
+
     def send_notification(self):
         try:
             resend.Emails.send({
@@ -155,3 +159,14 @@ class ViolenceDetectionService:
             })
         except Exception as e:
             print(f"Error during send_notification: {e}")
+    
+    def add_log(self):
+        try:
+            logs_collection.insert_one({
+                'timestamp': datetime.now(),
+                'alertType': 'Violence Detected',
+                'discription': 'Violence Detected at the specified location.',
+                'cameraId': '1'
+            })
+        except Exception as e:
+            print(f"Error during add_log: {e}")
