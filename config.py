@@ -7,6 +7,7 @@ load_dotenv(path.join(basedir, '.env'))
 class Config:
     HOST = environ.get('HOST')
     PORT = environ.get("PORT")
+    RESEND= environ.get("RESEND_API_KEY")
     DEBUG = True
     
     
