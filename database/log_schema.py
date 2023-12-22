@@ -1,5 +1,4 @@
-from database import mongoDB
-
+from database.mongoDB import VDS_DB
 
 log_schema = {
     'validator': {
@@ -28,7 +27,7 @@ log_schema = {
     }
 }
 
-if 'logs' not in mongoDB.list_collection_names():
-    logs_collection = mongoDB.create_collection('logs', validator=log_schema['validator'])
+if 'logs' not in VDS_DB.list_collection_names():
+    logs_collection = VDS_DB.create_collection('logs', validator=log_schema['validator'])
 else:
-    logs_collection = mongoDB['logs']
+    logs_collection = VDS_DB['logs']
