@@ -152,10 +152,10 @@ class ViolenceDetectionService:
     def send_notification(self):
         try:
             resend.Emails.send({
-                "from": "abdullah456154@gmail.com",
-                "to": "abdullah456145@gmail.com",
+                "from": "violence_detection_alert@resend.dev",
+                "to": "abdullah456154@gmail.com",
                 "subject": "Violence Detected Alert",
-                "html": "<p>Violence has been detected at the specified location.</p>"
+                "html": "<p><Strong>Violence</Strong> has been detected at the specified location.</p>"
             })
         except Exception as e:
             print(f"Error during send_notification: {e}")
@@ -165,7 +165,7 @@ class ViolenceDetectionService:
             logs_collection.insert_one({
                 'timestamp': datetime.now(),
                 'alertType': 'Violence Detected',
-                'discription': 'Violence Detected at the specified location.',
+                'description': 'Violence Detected at the specified location.',
                 'cameraId': '1'
             })
         except Exception as e:
