@@ -2,7 +2,12 @@ import cv2
 import keras
 from ultralytics import YOLO
 import numpy as np
+from config import Config
+import resend
+from threading import Thread
 
+resend_api_key = Config.RESEND
+resend.api_key = resend_api_key
 
 lstm_model = keras.models.load_model('model\\best\\model.keras')
 yolo_model = YOLO('model\\best\\yolov8n-pose.pt')
@@ -18,7 +23,7 @@ LABELS = ["2-hands punch", "1-hand punch", "Standing", "Holding"]
 class ViolenceDetectionService:
     def __init__(self):
         pass
-    def detect(self,image):
+    def detect(self, image):
         global label_
         label_ = ''
 
@@ -30,7 +35,6 @@ class ViolenceDetectionService:
         image = cv2.putText(image, f"there is {len(result_keypoint)}", (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
 
         if len(result_keypoint[0].xy[0]) != 0:
-
             if len(result_keypoint) > 1:
                 keys = self.find_closest_points(boxes)
                 self.proccess_keypoints(result_keypoint, keys)
@@ -71,12 +75,12 @@ class ViolenceDetectionService:
             print(f"Error during find_closest_points: {e}")
 
         return keys
-    
-    def calculate_distance(point1, point2):
+
+    def calculate_distance(self, point1, point2):
         return ((point1[1][0] - point2[1][0]) ** 2 +
                         (point1[1][1] - point2[1][1]) ** 2) ** 0.5
     
-    def centroid(x1, y1, x2, y2):
+    def centroid(self, x1, y1, x2, y2):
         return ((x1 + x2) // 2, (y1 + y2) // 2)
     
     def proccess_keypoints(self, keypoints, keys):
@@ -109,7 +113,7 @@ class ViolenceDetectionService:
         except Exception as e:
             print(f"Error during proccess_keypoints: {e}")               
                         
-    def process_prediction(lst_of_keypoints):
+    def process_prediction(self, lst_of_keypoints):
         global predictions_lst, label_
         try:
 
@@ -133,9 +137,21 @@ class ViolenceDetectionService:
                 
                 if (predictions_lst.count('2-hands punch') + predictions_lst.count('1-hand punch')) >= 4:
                     label_ = "Violence"
+                    self.send_notification()
                 else:
                     label_ = "No Violence"
                 predictions_lst=[]
             
         except Exception as e:  
             print(f"Error during process_prediction: {e}")
+    
+    def send_notification(self):
+        try:
+            resend.Emails.send({
+                "from": "abdullah456154@gmail.com",
+                "to": "abdullah456145@gmail.com",
+                "subject": "Violence Detected Alert",
+                "html": "<p>Violence has been detected at the specified location.</p>"
+            })
+        except Exception as e:
+            print(f"Error during send_notification: {e}")
