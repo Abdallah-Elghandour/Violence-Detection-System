@@ -10,5 +10,3 @@ class Config:
     RESEND= environ.get("RESEND_API_KEY")
     MONGO_DB= environ.get("MONGO_DB")
     DEBUG = True
-    
-    
