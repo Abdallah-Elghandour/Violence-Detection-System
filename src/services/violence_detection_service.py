@@ -129,7 +129,7 @@ class ViolenceDetectionService:
                 label = "NORMAL"
                 predictions_lst.append(label)
             
-            if len(predictions_lst) == 4:
+            if len(predictions_lst) == 2:
                 
                 if (predictions_lst.count('2-hands punch') + predictions_lst.count('1-hand punch')) >= 1:
                     label_ = "Violence"
