@@ -11,8 +11,8 @@ from datetime import datetime
 resend_api_key = Config.RESEND
 resend.api_key = resend_api_key
 
-lstm_model = keras.models.load_model('model\\best\\model.keras')
-yolo_model = YOLO('model\\best\\yolov8n-pose.pt')
+lstm_model = keras.models.load_model('model/best/model.keras')
+yolo_model = YOLO('model/best/yolov8n-pose.pt')
 
 steps = 0
 lst_of_dct = {'key_1':[],'key_2':[]}
@@ -39,7 +39,7 @@ class ViolenceDetectionService:
         if len(result_keypoint[0].xy[0]) != 0:
             if len(result_keypoint) > 1:
                 keys = self.find_closest_points(boxes)
-                self.proccess_keypoints(result_keypoint, keys)
+                self.process_keypoints(result_keypoint, keys)
                 
         image = cv2.putText(image, label_, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
         return image
@@ -52,13 +52,9 @@ class ViolenceDetectionService:
             points = {}
 
             for i, box in enumerate(boxes):
-
                 coordinates = box.xyxy[0]
-
-                
                 centroid_point = self.centroid(coordinates[0], coordinates[1], coordinates[2], coordinates[3])
-
-                points[i] = [coordinates, centroid_point]
+                points[i] = [coordinates, centroid_point]    
 
                 for j in points.keys():
                     if i != j:
@@ -75,7 +71,7 @@ class ViolenceDetectionService:
                 keys = [key1, key2]
         except Exception as e:
             print(f"Error during find_closest_points: {e}")
-
+            
         return keys
 
     def calculate_distance(self, point1, point2):
@@ -85,7 +81,7 @@ class ViolenceDetectionService:
     def centroid(self, x1, y1, x2, y2):
         return ((x1 + x2) // 2, (y1 + y2) // 2)
     
-    def proccess_keypoints(self, keypoints, keys):
+    def process_keypoints(self, keypoints, keys):
         global steps, lst_of_dct
         try: 
             for i in range(len(keys)):
@@ -112,7 +108,7 @@ class ViolenceDetectionService:
                     lst_of_keypoints = lst_of_keypoints.reshape((1, 64, 34))
                     self.process_prediction(lst_of_keypoints)
         except Exception as e:
-            print(f"Error during proccess_keypoints: {e}")               
+            print(f"Error during process_keypoints: {e}")               
                         
     def process_prediction(self, lst_of_keypoints):
         global predictions_lst, label_
@@ -133,10 +129,9 @@ class ViolenceDetectionService:
                 label = "NORMAL"
                 predictions_lst.append(label)
             
-            
-            if len(predictions_lst) == 6:
+            if len(predictions_lst) == 4:
                 
-                if (predictions_lst.count('2-hands punch') + predictions_lst.count('1-hand punch')) >= 4:
+                if (predictions_lst.count('2-hands punch') + predictions_lst.count('1-hand punch')) >= 1:
                     label_ = "Violence"
                     notification_thread = Thread(target=self.send_notification())
                     log_thread = Thread(target=self.add_log())
@@ -145,7 +140,6 @@ class ViolenceDetectionService:
                 else:
                     label_ = "No Violence"
                 predictions_lst=[]
-            
         except Exception as e:  
             print(f"Error during process_prediction: {e}")
 
