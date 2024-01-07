@@ -4,7 +4,7 @@ import cv2
 class RequestService:
     
     switch = False
-    cap = cv2.VideoCapture(0)#http://192.168.1.72:8080/video
+    # cap = cv2.VideoCapture(0)#http://192.168.1.72:8080/video
 
     def __init__(self):
         pass
@@ -14,7 +14,7 @@ class RequestService:
             if request.method == 'POST':
                 if request.form.get('start') == 'Start':
                     RequestService.switch = True
-                    RequestService.cap = cv2.VideoCapture(0)#http://192.168.1.72:8080/video
+                    RequestService.cap = cv2.VideoCapture("a.mp4")#http://192.168.1.72:8080/video
 
                 elif request.form.get('stop') == 'Stop':
                     
