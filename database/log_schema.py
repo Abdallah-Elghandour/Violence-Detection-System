@@ -1,5 +1,6 @@
 from database.mongoDB import VDS_DB
 
+# create a collection with a schema
 log_schema = {
     'validator': {
         "$jsonSchema": {
@@ -27,6 +28,7 @@ log_schema = {
     }
 }
 
+# check if the collection exists
 if 'logs' not in VDS_DB.list_collection_names():
     logs_collection = VDS_DB.create_collection('logs', validator=log_schema['validator'])
 else:

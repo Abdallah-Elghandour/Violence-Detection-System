@@ -2,6 +2,7 @@ from src.resources.base_resource import BaseResource
 from src.services.video_feed_service import VideoFeedService
 from flask import Response
 
+#this class is responsible for the get video feed resource
 class VideoFeedResource(BaseResource):
     def __init__(self):
         super().__init__()

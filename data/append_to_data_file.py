@@ -1,3 +1,5 @@
+# here we append the data from the class files to the data file
+# so that all data will be in one file and we can use it for training
 
 file1 = open("data\\dataset\\X_data.txt", "a")
 file2 = open("data\\dataset\\Y_data.txt", "a")

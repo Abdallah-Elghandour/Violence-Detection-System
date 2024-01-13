@@ -2,6 +2,7 @@ from ultralytics import YOLO
 import cv2
 import os
 
+#in this file we transform our videos to data keypoints file
 
 # **************add your videos path to transoform your data****************
 # path = "Violence Detection\\dataset\\videos\\standing\\"

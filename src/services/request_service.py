@@ -2,10 +2,10 @@ import src.services.violence_detection_service as vds
 from flask import request, render_template, Response
 import cv2
 
+#this class is responsible for the request service such as start and stop the video feed
 class RequestService:
-    
     switch = False
-    # cap = cv2.VideoCapture(0)#http://192.168.1.72:8080/video
+    cap = None
 
     def __init__(self):
         pass
