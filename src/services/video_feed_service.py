@@ -2,16 +2,16 @@ import cv2
 from src.services.request_service import RequestService
 from src.services.violence_detection_service import ViolenceDetectionService
 
-
+#this class is responsible for the video feed service such as generate frames
 class VideoFeedService:
     def __init__(self):
         self._request = RequestService()
         self._detect = ViolenceDetectionService()
+    
+    #the function generate frames from the video feed
     def generate_frames(self):
         try:
-
             if self._request.switch:
-
                 while True:
                     success, frame = self._request.cap.read()
                     if success:

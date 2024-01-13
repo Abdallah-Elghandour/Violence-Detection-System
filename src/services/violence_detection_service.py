@@ -8,9 +8,11 @@ from threading import Thread
 from database.log_schema import logs_collection
 from datetime import datetime
 
+#resend api key for sending emails
 resend_api_key = Config.RESEND
 resend.api_key = resend_api_key
 
+#load the trained models
 lstm_model = keras.models.load_model('model/best/model.keras')
 yolo_model = YOLO('model/best/yolov8n-pose.pt')
 
@@ -19,33 +21,34 @@ lst_of_dct = {'key_1':[],'key_2':[]}
 predictions_lst = []
 label_ = ''
 
+#classes for the prediction
 LABELS = ["2-hands punch", "1-hand punch", "Standing", "Holding"] 
 
-
+# this class is responsible for the violence detection service such as detect violence
 class ViolenceDetectionService:
     def __init__(self):
         pass
     def detect(self, image):
         global label_
-        label_ = ''
 
         results = yolo_model.predict(source=image, conf=0.60, classes=0, save=False)
-
         boxes = results[0].boxes
         result_keypoint = results[0].keypoints
 
+        #write the number of people in the frame
         image = cv2.putText(image, f"there is {len(result_keypoint)}", (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
 
         if len(result_keypoint[0].xy[0]) != 0:
             if len(result_keypoint) > 1:
                 keys = self.find_closest_points(boxes)
                 self.process_keypoints(result_keypoint, keys)
-                
+        #write the label in the frame        
         image = cv2.putText(image, label_, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
         return image
     
+    #this function find the closest people in the frame
     def find_closest_points(self, boxes):
-        try:
+        try:          
             key1 = 0
             key2 = 0
             minn = 1500
@@ -73,14 +76,17 @@ class ViolenceDetectionService:
             print(f"Error during find_closest_points: {e}")
             
         return keys
-
+    
+    #this function calculate the distance between two people
     def calculate_distance(self, point1, point2):
         return ((point1[1][0] - point2[1][0]) ** 2 +
                         (point1[1][1] - point2[1][1]) ** 2) ** 0.5
     
+    #this function calculate the centroid of the person
     def centroid(self, x1, y1, x2, y2):
         return ((x1 + x2) // 2, (y1 + y2) // 2)
     
+    #this function process the keypoints of the closest people
     def process_keypoints(self, keypoints, keys):
         global steps, lst_of_dct
         try: 
@@ -109,7 +115,8 @@ class ViolenceDetectionService:
                     self.process_prediction(lst_of_keypoints)
         except Exception as e:
             print(f"Error during process_keypoints: {e}")               
-                        
+
+    #this function process the prediction of the closest people                    
     def process_prediction(self, lst_of_keypoints):
         global predictions_lst, label_
         try:
@@ -143,6 +150,7 @@ class ViolenceDetectionService:
         except Exception as e:  
             print(f"Error during process_prediction: {e}")
 
+    #this function send notification alert to the user
     def send_notification(self):
         try:
             resend.Emails.send({
@@ -154,6 +162,7 @@ class ViolenceDetectionService:
         except Exception as e:
             print(f"Error during send_notification: {e}")
     
+    #this function add violence log to the database
     def add_log(self):
         try:
             logs_collection.insert_one({
