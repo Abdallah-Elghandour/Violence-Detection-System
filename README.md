@@ -1,4 +1,4 @@
-# Overview
+# Graduation Project Overview
 ## Violence Detection System 
 The aim is to develop an intelligent Violence Detection System (VDS) that uses advanced technologies, including computer vision and deep learning, to automatically detect violent actions in real-time. Where the system is designed to take frames from surveillance cameras to display it for the user to monitor and to detect whether there is violent action or not. When violent action detected the system generated alert to notify authorities.
 
